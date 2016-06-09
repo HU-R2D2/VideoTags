@@ -161,12 +161,12 @@ public:
     m_tagDetector(NULL),
     m_tagCodes(AprilTags::tagCodes36h11),
 
-    m_draw(true),
+    m_draw(false),
     m_arduino(false),
     m_timing(false),
 
-    m_width(640),
-    m_height(480),
+    m_width(320),
+    m_height(240),
     m_tagSize(0.166),
     m_fx(600),
     m_fy(600),
@@ -178,6 +178,7 @@ public:
     m_brightness(-1),
 
     m_deviceId(0)
+
   {}
 
   // changing the tag family
@@ -198,99 +199,9 @@ public:
     }
   }
 
-  // parse command line options to change default behavior
-  void parseOptions(int argc, char* argv[]) {
-    int c;
-    while ((c = getopt(argc, argv, ":h?adtC:F:H:S:W:E:G:B:D:")) != -1) {
-      // Each option character has to be in the string in getopt();
-      // the first colon changes the error character from '?' to ':';
-      // a colon after an option means that there is an extra
-      // parameter to this option; 'W' is a reserved character
-      switch (c) {
-      case 'h':
-      case '?':
-        cout << intro;
-        cout << usage;
-        exit(0);
-        break;
-      case 'a':
-        m_arduino = true;
-        break;
-      case 'd':
-        m_draw = false;
-        break;
-      case 't':
-        m_timing = true;
-        break;
-      case 'C':
-        setTagCodes(optarg);
-        break;
-      case 'F':
-        m_fx = atof(optarg);
-        m_fy = m_fx;
-        break;
-      case 'H':
-        m_height = atoi(optarg);
-        m_py = m_height/2;
-         break;
-      case 'S':
-        m_tagSize = atof(optarg);
-        break;
-      case 'W':
-        m_width = atoi(optarg);
-        m_px = m_width/2;
-        break;
-      case 'E':
-#ifndef EXPOSURE_CONTROL
-        cout << "Error: Exposure option (-E) not available" << endl;
-        exit(1);
-#endif
-        m_exposure = atoi(optarg);
-        break;
-      case 'G':
-#ifndef EXPOSURE_CONTROL
-        cout << "Error: Gain option (-G) not available" << endl;
-        exit(1);
-#endif
-        m_gain = atoi(optarg);
-        break;
-      case 'B':
-#ifndef EXPOSURE_CONTROL
-        cout << "Error: Brightness option (-B) not available" << endl;
-        exit(1);
-#endif
-        m_brightness = atoi(optarg);
-        break;
-      case 'D':
-        m_deviceId = atoi(optarg);
-        break;
-      case ':': // unknown option, from getopt
-        cout << intro;
-        cout << usage;
-        exit(1);
-        break;
-      }
-    }
-
-    if (argc > optind) {
-      for (int i=0; i<argc-optind; i++) {
-        m_imgNames.push_back(argv[optind+i]);
-      }
-    }
-  }
-
   void setup() {
     m_tagDetector = new AprilTags::TagDetector(m_tagCodes);
 
-    // prepare window for drawing the camera images
-    if (m_draw) {
-      cv::namedWindow(windowName, 1);
-    }
-
-    // optional: prepare serial port for communication with Arduino
-    if (m_arduino) {
-      m_serial.open("/dev/ttyACM0");
-    }
   }
 
   void setupVideo() {
@@ -386,75 +297,20 @@ public:
     // alternative way is to grab, then retrieve; allows for
     // multiple grab when processing below frame rate - v4l keeps a
     // number of frames buffered, which can lead to significant lag
-    //      m_cap.grab();
-    //      m_cap.retrieve(image);
+    m_cap.grab();
+    m_cap.retrieve(image);
 
     // detect April tags (requires a gray scale image)
     cv::cvtColor(image, image_gray, CV_BGR2GRAY);
-    double t0;
-    if (m_timing) {
-      t0 = tic();
-    }
+   
     vector<AprilTags::TagDetection> detections = m_tagDetector->extractTags(image_gray);
-    if (m_timing) {
-      double dt = tic()-t0;
-      cout << "Extracting tags took " << dt << " seconds." << endl;
-    }
-
+   
     // print out each detection
     cout << detections.size() << " tags detected:" << endl;
     for (int i=0; i<detections.size(); i++) {
       print_detection(detections[i]);
     }
-
-    // show the current image including any detections
-    if (m_draw) {
-      for (int i=0; i<detections.size(); i++) {
-        // also highlight in the image
-        detections[i].draw(image);
-      }
-      imshow(windowName, image); // OpenCV call
-    }
-
-    // optionally send tag information to serial port (e.g. to Arduino)
-    if (m_arduino) {
-      if (detections.size() > 0) {
-        // only the first detected tag is sent out for now
-        Eigen::Vector3d translation;
-        Eigen::Matrix3d rotation;
-        detections[0].getRelativeTranslationRotation(m_tagSize, m_fx, m_fy, m_px, m_py,
-                                                     translation, rotation);
-        m_serial.print(detections[0].id);
-        m_serial.print(",");
-        m_serial.print(translation(0));
-        m_serial.print(",");
-        m_serial.print(translation(1));
-        m_serial.print(",");
-        m_serial.print(translation(2));
-        m_serial.print("\n");
-      } else {
-        // no tag detected: tag ID = -1
-        m_serial.print("-1,0.0,0.0,0.0\n");
-      }
-    }
-  }
-
-  // Load and process a single image
-  void loadImages() {
-    cv::Mat image;
-    cv::Mat image_gray;
-
-    for (list<string>::iterator it=m_imgNames.begin(); it!=m_imgNames.end(); it++) {
-      image = cv::imread(*it); // load image with opencv
-      processImage(image, image_gray);
-      while (cv::waitKey(100) == -1) {}
-    }
-  }
-
-  // Video or image processing?
-  bool isVideo() {
-    return m_imgNames.empty();
-  }
+ }
 
   // The processing loop where images are retrieved, tags detected,
   // and information about detections generated
@@ -493,11 +349,10 @@ int main(int argc, char* argv[]) {
   Demo demo;
 
   // process command line options
-  demo.parseOptions(argc, argv);
+  //demo.parseOptions(argc, argv);
 
   demo.setup();
 
-  if (demo.isVideo()) {
     cout << "Processing video" << endl;
 
     // setup image source, window for drawing, serial port...
@@ -505,14 +360,6 @@ int main(int argc, char* argv[]) {
 
     // the actual processing loop where tags are detected and visualized
     demo.loop();
-
-  } else {
-    cout << "Processing image" << endl;
-
-    // process single image
-    demo.loadImages();
-
-  }
 
   return 0;
 }
