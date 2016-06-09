@@ -1,7 +1,10 @@
+#include "VideoTag.hpp"
+
 VideoTag::VideoTag(double error):
 	error(error)
 {
-	demo.setupVideo();
+	setupVideo();
+	//get_data();
 }
 // utility function to provide current system time (used below in
 // determining frame rate at which images are being processed)
@@ -168,7 +171,7 @@ void VideoTag::wRo_to_euler(const Eigen::Matrix3d& wRo, double& yaw, double& pit
 
     int frame = 0;
     double last_t = tic();
-    while (tic() - last_t >= 1000) {
+    while (tic() - last_t > 100000000) {
 
       // capture frame
       m_cap >> image;
@@ -195,7 +198,7 @@ void VideoTag::wRo_to_euler(const Eigen::Matrix3d& wRo, double& yaw, double& pit
 int main(int argc, char* argv[]) {
 
     // the actual processing loop where tags are detected and visualized
-    demo.get_data();
+    get_data();
 
   return 0;
 }

@@ -3,8 +3,10 @@
 #include <vector>
 #include <list>
 #include <sys/time.h>
-
 #include <cmath>
+
+#include "../../../sensorInterfaces/source/include/Sensor.hpp"
+#include "../../../adt/source/include/Coordinate.hpp"
 
 #ifndef __APPLE__
 #define EXPOSURE_CONTROL // only works in Linux
@@ -29,15 +31,12 @@
 #include "AprilTags/Tag36h9.h"
 #include "AprilTags/Tag36h11.h"
 
-
 // Needed for getopt / command line options processing
 #include <unistd.h>
 extern int optind;
 extern char *optarg;
 
 const char* windowName = "apriltags_demo";
-
-
 
 #ifndef PI
 const double PI = 3.14159265358979323846;
@@ -83,7 +82,6 @@ private:
   int m_deviceId = 0; // camera id (in case of multiple cameras)
 
   list<string> m_imgNames;
-
   cv::VideoCapture m_cap;
 
   int m_exposure = -1 ;
