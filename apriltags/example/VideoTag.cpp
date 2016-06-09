@@ -1,109 +1,20 @@
-/**
- * @file april_tags.cpp
- * @brief Example application for April tags library
- * @author: Michael Kaess
- *
- * Opens the first available camera (typically a built in camera in a
- * laptop) and continuously detects April tags in the incoming
- * images. Detections are both visualized in the live image and shown
- * in the text console. Optionally allows selecting of a specific
- * camera in case multiple ones are present and specifying image
- * resolution as long as supported by the camera. Also includes the
- * option to send tag detections via a serial port, for example when
- * running on a Raspberry Pi that is connected to an Arduino.
- */
-
-using namespace std;
-
-#include <iostream>
-#include <cstring>
-#include <vector>
-#include <list>
-#include <sys/time.h>
-
-const string usage = "\n"
-  "Usage:\n"
-  "  apriltags_demo [OPTION...] [IMG1 [IMG2...]]\n"
-  "\n"
-  "Options:\n"
-  "  -h  -?          Show help options\n"
-  "  -a              Arduino (send tag ids over serial port)\n"
-  "  -d              Disable graphics\n"
-  "  -t              Timing of tag extraction\n"
-  "  -C <bbxhh>      Tag family (default 36h11)\n"
-  "  -D <id>         Video device ID (if multiple cameras present)\n"
-  "  -F <fx>         Focal length in pixels\n"
-  "  -W <width>      Image width (default 640, availability depends on camera)\n"
-  "  -H <height>     Image height (default 480, availability depends on camera)\n"
-  "  -S <size>       Tag size (square black frame) in meters\n"
-  "  -E <exposure>   Manually set camera exposure (default auto; range 0-10000)\n"
-  "  -G <gain>       Manually set camera gain (default auto; range 0-255)\n"
-  "  -B <brightness> Manually set the camera brightness (default 128; range 0-255)\n"
-  "\n";
-
-const string intro = "\n"
-    "April tags test code\n"
-    "(C) 2012-2014 Massachusetts Institute of Technology\n"
-    "Michael Kaess\n"
-    "\n";
-
-
-#ifndef __APPLE__
-#define EXPOSURE_CONTROL // only works in Linux
-#endif
-
-#ifdef EXPOSURE_CONTROL
-#include <libv4l2.h>
-#include <linux/videodev2.h>
-#include <fcntl.h>
-#include <errno.h>
-#endif
-
-// OpenCV library for easy access to USB camera and drawing of images
-// on screen
-#include "opencv2/opencv.hpp"
-
-// April tags detector and various families that can be selected by command line option
-#include "AprilTags/TagDetector.h"
-#include "AprilTags/Tag16h5.h"
-#include "AprilTags/Tag25h7.h"
-#include "AprilTags/Tag25h9.h"
-#include "AprilTags/Tag36h9.h"
-#include "AprilTags/Tag36h11.h"
-
-
-// Needed for getopt / command line options processing
-#include <unistd.h>
-extern int optind;
-extern char *optarg;
-
-// For Arduino: locally defined serial port access class
-#include "Serial.h"
-
-
-const char* windowName = "apriltags_demo";
-
-
+VideoTag::VideoTag(double error):
+	error(error)
+{
+	demo.setupVideo();
+}
 // utility function to provide current system time (used below in
 // determining frame rate at which images are being processed)
-double tic() {
+double VideoTag::tic() {
   struct timeval t;
   gettimeofday(&t, NULL);
   return ((double)t.tv_sec + ((double)t.tv_usec)/1000000.);
 }
 
-
-#include <cmath>
-
-#ifndef PI
-const double PI = 3.14159265358979323846;
-#endif
-const double TWOPI = 2.0*PI;
-
 /**
  * Normalize angle to be within the interval [-pi,pi].
  */
-inline double standardRad(double t) {
+double VideoTag::standardRad(double t) {
   if (t >= 0.) {
     t = fmod(t+PI, TWOPI) - PI;
   } else {
@@ -115,7 +26,7 @@ inline double standardRad(double t) {
 /**
  * Convert rotation matrix to Euler angles
  */
-void wRo_to_euler(const Eigen::Matrix3d& wRo, double& yaw, double& pitch, double& roll) {
+void VideoTag::wRo_to_euler(const Eigen::Matrix3d& wRo, double& yaw, double& pitch, double& roll) {
     yaw = standardRad(atan2(wRo(1,0), wRo(0,0)));
     double c = cos(yaw);
     double s = sin(yaw);
@@ -123,66 +34,8 @@ void wRo_to_euler(const Eigen::Matrix3d& wRo, double& yaw, double& pitch, double
     roll  = standardRad(atan2(wRo(0,2)*s - wRo(1,2)*c, -wRo(0,1)*s + wRo(1,1)*c));
 }
 
-
-class Demo {
-
-  AprilTags::TagDetector* m_tagDetector;
-  AprilTags::TagCodes m_tagCodes;
-
-  bool m_draw; // draw image and April tag detections?
-  bool m_arduino; // send tag detections to serial port?
-  bool m_timing; // print timing information for each tag extraction call
-
-  int m_width; // image size in pixels
-  int m_height;
-  double m_tagSize; // April tag side length in meters of square black frame
-  double m_fx; // camera focal length in pixels
-  double m_fy;
-  double m_px; // camera principal point
-  double m_py;
-
-  int m_deviceId; // camera id (in case of multiple cameras)
-
-  list<string> m_imgNames;
-
-  cv::VideoCapture m_cap;
-
-  int m_exposure;
-  int m_gain;
-  int m_brightness;
-
-  Serial m_serial;
-
-public:
-
-  // default constructor
-  Demo() :
-    // default settings, most can be modified through command line options (see below)
-    m_tagDetector(NULL),
-    m_tagCodes(AprilTags::tagCodes36h11),
-
-    m_draw(false),
-    m_arduino(false),
-    m_timing(false),
-
-    m_width(320),
-    m_height(240),
-    m_tagSize(0.166),
-    m_fx(600),
-    m_fy(600),
-    m_px(m_width/2),
-    m_py(m_height/2),
-
-    m_exposure(-1),
-    m_gain(-1),
-    m_brightness(-1),
-
-    m_deviceId(0)
-
-  {}
-
   // changing the tag family
-  void setTagCodes(string s) {
+  void VideoTag::setTagCodes(string s) {
     if (s=="16h5") {
       m_tagCodes = AprilTags::tagCodes16h5;
     } else if (s=="25h7") {
@@ -199,13 +52,8 @@ public:
     }
   }
 
-  void setup() {
-    
 
-  }
-
-  void setupVideo() {
-
+  void VideoTag::setupVideo() {
 #ifdef EXPOSURE_CONTROL
     // manually setting camera exposure settings; OpenCV/v4l1 doesn't
     // support exposure control; so here we manually use v4l2 before
@@ -251,10 +99,9 @@ public:
     cout << "Actual resolution: "
          << m_cap.get(CV_CAP_PROP_FRAME_WIDTH) << "x"
          << m_cap.get(CV_CAP_PROP_FRAME_HEIGHT) << endl;
-
   }
 
-  void print_detection(AprilTags::TagDetection& detection) const {
+  void VideoTag::print_detection(AprilTags::TagDetection& detection) const {
     cout << "  Id: " << detection.id
          << " (Hamming: " << detection.hammingDistance << ")";
 
@@ -341,22 +188,11 @@ public:
     }
   }
 
-}; // Demo
+};
 
 
 // here is were everything begins
 int main(int argc, char* argv[]) {
-  Demo demo;
-
-  // process command line options
-  //demo.parseOptions(argc, argv);
-
-	m_tagDetector = new AprilTags::TagDetector(m_tagCodes);
-
-    cout << "Processing video" << endl;
-
-    // setup image source, window for drawing, serial port...
-    demo.setupVideo();
 
     // the actual processing loop where tags are detected and visualized
     demo.get_data();
