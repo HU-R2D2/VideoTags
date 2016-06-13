@@ -61,7 +61,11 @@ public:
 	void setTagCodes(string s);
 	void setupVideo();
 	void print_detection(AprilTags::TagDetection& detection);
-	void processImage(cv::Mat& image, cv::Mat& image_gray);
+	//void processImage(cv::Mat& image, cv::Mat& image_gray);
+	
+	
+	vector<AprilTags::TagDetection> processImage(cv::Mat& image, cv::Mat& image_gray);
+	r2d2::Coordinate calculatePosition(AprilTags::TagDetection& detection);
 					  
 private:
  	AprilTags::TagCodes m_tagCodes = AprilTags::tagCodes36h11;

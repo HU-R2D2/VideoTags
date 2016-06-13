@@ -142,8 +142,29 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
     // this relative pose is very non-Gaussian; see iSAM source code
     // for suitable factors.
   }
+  
+  r2d2::Coordinate VideoTag::calculatePosition(AprilTags::TagDetection& detection) {
+	Eigen::Vector3d translation;
+    Eigen::Matrix3d rotation;
+    detection.getRelativeTranslationRotation(m_tagSize, m_fx, m_fy, m_px, m_py,
+                                             translation, rotation);
+	
+	int id = detection.id;
+	
+	r2d2::Coordinate tag_coordinate;
+	// todo --> get coordinate of de tag with his ID
+	Length tag_x = 0 * Length::METER;
+	Length tag_y = 0 * Length::METER;
+	Length tag_z = 0 * Length::METER;
+	
+	// distance from camera to tag
+	Length camera_x = translation(0) * Length::METER;
+	Length camera_y = translation(1) * Length::METER;
+	Length camera_z = translation(2) * Length::METER;
+	return r2d2::Coordinate(tag_x + camera_x, tag_y + camera_y, tag_z + camera_y);
+}
 
-  void VideoTag::processImage(cv::Mat& image, cv::Mat& image_gray) {
+  vector<AprilTags::TagDetection> VideoTag::processImage(cv::Mat& image, cv::Mat& image_gray) {
     // alternative way is to grab, then retrieve; allows for
     // multiple grab when processing below frame rate - v4l keeps a
     // number of frames buffered, which can lead to significant lag
@@ -160,6 +181,8 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
     for (int i=0; i<detections.size(); i++) {
       print_detection(detections[i]);
     }
+	
+	return detections;
  }
 
   // The processing loop where images are retrieved, tags detected,
@@ -181,7 +204,29 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 								r2d2::Length::CENTIMETER * y,
 								r2d2::Length::CENTIMETER * z};*/
 		
-      	processImage(image, image_gray);
+      	//processImage(image, image_gray);
+		
+		vector<AprilTags::TagDetection> detections = processImage(image, image_gray);
+	  
+	  
+		int detect_count = detections.size();
+		if(detect_count > 0){
+		    // get distance of tags;
+			// and calculate average of de coordinates
+			Length x = 0 * Length::METER, y = 0 * Length::METER, z = 0 * Length::METER;
+			for (int i = 0; i < detect_count; i++) {
+				r2d2::Coordinate temp = calculatePosition(detections[i]);
+				x += temp.get_x();
+				y += temp.get_y();
+				z += temp.get_z();
+			}
+			x /= detect_count;
+			y /= detect_count;
+			z /= detect_count;
+			r2d2::Coordinate average_coordinate(x, y, z);
+			SensorResult result{0.0, average_coordinate};
+			return result;
+		}
 
       	// print out the frame rate at which image frames are being processed
       	frame++;
