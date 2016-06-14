@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include <cstring>
+#include <string>
+#include <sstream>
 #include <vector>
 #include <list>
 #include <sys/time.h>
@@ -59,6 +61,8 @@ public:
 	SensorResult get_data() override;
 					  
 private:
+	void read_tag_info();
+	
 	void loop();
 
 	//! Function to return the current system time
