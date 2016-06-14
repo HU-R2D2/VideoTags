@@ -126,7 +126,7 @@ private:
 
 	int m_width = 320; // image size in pixels
 	int m_height = 240;
-	double m_tagSize = 0.166; // April tag side length in meters of square black frame
+	double m_tagSize = 0.172; // April tag side length in meters of square black frame
   	double m_fx = 600; // camera focal length in pixels
   	double m_fy = 600;
   	double m_px = m_width/2; // camera principal point

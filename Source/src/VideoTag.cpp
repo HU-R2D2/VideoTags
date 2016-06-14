@@ -35,7 +35,6 @@ void VideoTag::loop(){
 		vector<AprilTags::TagDetection> detections = processImage(image, image_gray);
 
 		int detect_count = detections.size();
-		print_detection(detections[i]);
 		if(detect_count > 0){
 		    // get distance of tags;
 			// and calculate average of de coordinates
