@@ -167,10 +167,10 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
   VideoTag::SensorResult VideoTag::get_data() {
     cv::Mat image;
     cv::Mat image_gray;
-
+    cout << " tags detected:" << endl;
     int frame = 0;
     double last_t = tic();
-    while (tic() - last_t > 100000000) {
+    while (true) {
     	// capture frame
       	m_cap >> image;
 		
@@ -192,6 +192,7 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
       	}	
       	// exit if any key is pressed
       	if (cv::waitKey(1) >= 0) break;
+        cout << " tags detected:" << endl;
     }
 	SensorResult result{0.0, r2d2::Coordinate::origin};
 	return result;
