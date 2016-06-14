@@ -57,9 +57,10 @@ public:
 	//! Returned the coordinates of the camera
 	//! return SensorResult, with the coordinates of the camera
 	SensorResult get_data() override;
-	
 					  
 private:
+	void loop();
+
 	//! Function to return the current system time
 	//! return current system time in seconds
 	double tic();
@@ -127,7 +128,9 @@ private:
   	int m_gain = -1 ;
   	int m_brightness = -1;
 
-  	r2d2::Coordinate value;
+	SensorResult result(0.0, r2d2::Coordinate(0 * r2d2::Length::METER,
+						  0 * r2d2::Length::METER,
+						  0 * r2d2::Length::METER)};
 		
 };
 #endif

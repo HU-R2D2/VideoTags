@@ -4,8 +4,38 @@ VideoTag::VideoTag(double factor):
 	Sensor{ factor }
 {
 	setupVideo();
+	loop();
 	//get_data();
 }
+
+VideoTag::loop(){
+	cv::Mat image;
+	cv::Mat image_gray;
+	while(true){
+    		// capture frame
+      		m_cap >> image;
+		vector<AprilTags::TagDetection> detections = processImage(image, image_gray);
+
+		int detect_count = detections.size();
+		if(detect_count > 0){
+		    	// get distance of tags;
+			// and calculate average of de coordinates
+			r2d2::Length x = 0 * r2d2::Length::METER, y = 0 * r2d2::Length::METER, z = 0 * r2d2::Length::METER;
+			for (int i = 0; i < detect_count; i++) {
+				r2d2::Coordinate temp = calculatePosition(detections[i]);
+				x += temp.get_x();
+				y += temp.get_y();
+				z += temp.get_z();
+			}
+			x /= detect_count;
+			y /= detect_count;
+			z /= detect_count;
+			r2d2::Coordinate average_coordinate(x, y, z);
+			result = SensorResult(0.0, average_coordinate);
+		}
+	}
+}
+
 // utility function to provide current system time (used below in
 // determining frame rate at which images are being processed)
 double VideoTag::tic() {
@@ -188,65 +218,14 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
   // The processing loop where images are retrieved, tags detected,
   // and information about detections generated
   VideoTag::SensorResult VideoTag::get_data() {
-    cv::Mat image;
-    cv::Mat image_gray;
-    cout << " tags detected:" << endl;
-    int frame = 0;
-    double last_t = tic();
-    while (true) {
-    	// capture frame
-      	m_cap >> image;
-
-		int x = 1;
-		int y = 1;
-		int z = 1;
-		/*r2d2::Coordinate value{ r2d2::Length::CENTIMETER * x,
-								r2d2::Length::CENTIMETER * y,
-								r2d2::Length::CENTIMETER * z};*/
-
-      	//processImage(image, image_gray);
-
-		vector<AprilTags::TagDetection> detections = processImage(image, image_gray);
-
-
-		int detect_count = detections.size();
-		if(detect_count > 0){
-		    // get distance of tags;
-			// and calculate average of de coordinates
-			r2d2::Length x = 0 * r2d2::Length::METER, y = 0 * r2d2::Length::METER, z = 0 * r2d2::Length::METER;
-			for (int i = 0; i < detect_count; i++) {
-				r2d2::Coordinate temp = calculatePosition(detections[i]);
-				x += temp.get_x();
-				y += temp.get_y();
-				z += temp.get_z();
-			}
-			x /= detect_count;
-			y /= detect_count;
-			z /= detect_count;
-			r2d2::Coordinate average_coordinate(x, y, z);
-			SensorResult result{0.0, average_coordinate};
-			return result;
-		}
-
-      	// print out the frame rate at which image frames are being processed
-      	frame++;
-      	if (frame % 10 == 0) {
-        	double t = tic();
-        	cout << "  " << 10./(t-last_t) << " fps" << endl;
-        	last_t = t;
-      	}
-      	// exit if any key is pressed
-      	if (cv::waitKey(1) >= 0) break;
-    }
-	SensorResult result{0.0, r2d2::Coordinate::origin};
 	return result;
   }
 
 // here is were everything begins
 int main(int argc, char* argv[]) {
 	VideoTag tag (0.0);
-    // the actual processing loop where tags are detected and visualized
-    tag.get_data();
+    	// the actual processing loop where tags are detected and visualized
+    	tag.get_data();
 
   return 0;
 }
