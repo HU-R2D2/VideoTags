@@ -88,7 +88,7 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
       v4l2_set_control(device, V4L2_CID_BRIGHTNESS, m_brightness*256);
     }
     v4l2_close(device);
-#endif 
+#endif
 
     // find and open a USB camera (built in laptop camera, web cam etc)
     m_cap = cv::VideoCapture(m_deviceId);
@@ -142,25 +142,25 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
     // this relative pose is very non-Gaussian; see iSAM source code
     // for suitable factors.
   }
-  
+
   r2d2::Coordinate VideoTag::calculatePosition(AprilTags::TagDetection& detection) {
 	Eigen::Vector3d translation;
     Eigen::Matrix3d rotation;
     detection.getRelativeTranslationRotation(m_tagSize, m_fx, m_fy, m_px, m_py,
                                              translation, rotation);
-	
+
 	int id = detection.id;
-	
+
 	r2d2::Coordinate tag_coordinate;
 	// todo --> get coordinate of de tag with his ID
-	Length tag_x = 0 * Length::METER;
-	Length tag_y = 0 * Length::METER;
-	Length tag_z = 0 * Length::METER;
-	
+	r2d2::Length tag_x = 0 * r2d2::Length::METER;
+	r2d2::Length tag_y = 0 * r2d2::Length::METER;
+	r2d2::Length tag_z = 0 * r2d2::Length::METER;
+
 	// distance from camera to tag
-	Length camera_x = translation(0) * Length::METER;
-	Length camera_y = translation(1) * Length::METER;
-	Length camera_z = translation(2) * Length::METER;
+	r2d2::Length camera_x = translation(0) * r2d2::Length::METER;
+	r2d2::Length camera_y = translation(1) * r2d2::Length::METER;
+	r2d2::Length camera_z = translation(2) * r2d2::Length::METER;
 	return r2d2::Coordinate(tag_x + camera_x, tag_y + camera_y, tag_z + camera_y);
 }
 
@@ -173,15 +173,15 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 
     // detect April tags (requires a gray scale image)
     cv::cvtColor(image, image_gray, CV_BGR2GRAY);
-   
+
     vector<AprilTags::TagDetection> detections = m_tagDetector->extractTags(image_gray);
-   
+
     // print out each detection
     cout << detections.size() << " tags detected:" << endl;
     for (int i=0; i<detections.size(); i++) {
       print_detection(detections[i]);
     }
-	
+
 	return detections;
  }
 
@@ -196,24 +196,24 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
     while (true) {
     	// capture frame
       	m_cap >> image;
-		
+
 		int x = 1;
 		int y = 1;
 		int z = 1;
 		/*r2d2::Coordinate value{ r2d2::Length::CENTIMETER * x,
 								r2d2::Length::CENTIMETER * y,
 								r2d2::Length::CENTIMETER * z};*/
-		
+
       	//processImage(image, image_gray);
-		
+
 		vector<AprilTags::TagDetection> detections = processImage(image, image_gray);
-	  
-	  
+
+
 		int detect_count = detections.size();
 		if(detect_count > 0){
 		    // get distance of tags;
 			// and calculate average of de coordinates
-			Length x = 0 * Length::METER, y = 0 * Length::METER, z = 0 * Length::METER;
+			r2d2::Length x = 0 * r2d2::Length::METER, y = 0 * r2d2::Length::METER, z = 0 * r2d2::Length::METER;
 			for (int i = 0; i < detect_count; i++) {
 				r2d2::Coordinate temp = calculatePosition(detections[i]);
 				x += temp.get_x();
@@ -234,7 +234,7 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
         	double t = tic();
         	cout << "  " << 10./(t-last_t) << " fps" << endl;
         	last_t = t;
-      	}	
+      	}
       	// exit if any key is pressed
       	if (cv::waitKey(1) >= 0) break;
     }
