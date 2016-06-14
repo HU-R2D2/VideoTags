@@ -192,7 +192,6 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
       	}	
       	// exit if any key is pressed
       	if (cv::waitKey(1) >= 0) break;
-        cout << " tags detected:" << endl;
     }
 	SensorResult result{0.0, r2d2::Coordinate::origin};
 	return result;
