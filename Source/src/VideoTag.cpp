@@ -26,13 +26,13 @@ void VideoTag::loop(){
 	cv::Mat image;
 	cv::Mat image_gray;
 	while(true){
-    		// capture frame
-      		m_cap >> image;
+    	// capture frame
+      	m_cap >> image;
 		vector<AprilTags::TagDetection> detections = processImage(image, image_gray);
 
 		int detect_count = detections.size();
 		if(detect_count > 0){
-		    	// get distance of tags;
+		    // get distance of tags;
 			// and calculate average of de coordinates
 			r2d2::Length x = 0 * r2d2::Length::METER, y = 0 * r2d2::Length::METER, z = 0 * r2d2::Length::METER;
 			for (int i = 0; i < detect_count; i++) {
@@ -40,6 +40,7 @@ void VideoTag::loop(){
 				x += temp.get_x();
 				y += temp.get_y();
 				z += temp.get_z();
+                print_detection(detections[i]);
 			}
 			x /= detect_count;
 			y /= detect_count;

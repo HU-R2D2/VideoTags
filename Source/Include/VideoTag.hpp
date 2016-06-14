@@ -132,9 +132,9 @@ private:
   	int m_gain = -1 ;
   	int m_brightness = -1;
 
-	SensorResult result(0.0, r2d2::Coordinate(0 * r2d2::Length::METER,
+	SensorResult result = SensorResult(0.0, r2d2::Coordinate(0 * r2d2::Length::METER,
 						  0 * r2d2::Length::METER,
-						  0 * r2d2::Length::METER)};
+						  0 * r2d2::Length::METER));
 		
 };
 #endif
