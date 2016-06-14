@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include <cstring>
+#include <string>
+#include <sstream>
 #include <vector>
 #include <list>
 #include <sys/time.h>
@@ -61,12 +63,17 @@ public:
 	SensorResult get_data() override;
 					  
 private:
+<<<<<<< HEAD
 	
 	typedef struct tag_info{
 		int id;
 		r2d2::CoordinateAttitude position;
 	}tag;
 
+=======
+	void read_tag_info();
+	
+>>>>>>> c8e45e3bacf09a15e96ff94b00c8f38b34bd67b7
 	void loop();
 
 	//! Function to return the current system time
@@ -136,8 +143,8 @@ private:
   	int m_gain = -1 ;
   	int m_brightness = -1;
 	r2d2::Coordinate cor = r2d2::Coordinate( 0 * r2d2::Length::METER,
-						  		 							  0 * r2d2::Length::METER,
-						  		 							  0 * r2d2::Length::METER);
+						  		 			 0 * r2d2::Length::METER,
+						  		 			 0 * r2d2::Length::METER);
 	SensorResult result = SensorResult(0.0, cor);
 		
 };

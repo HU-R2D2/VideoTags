@@ -4,8 +4,22 @@ VideoTag::VideoTag(double factor):
 	Sensor{ factor }
 {
 	setupVideo();
+	read_tag_info();
 	loop();
 	//get_data();
+}
+
+void read_tag_info(){
+	std::string line;
+	std::ifstream tag_file("Tag_Info.txt");
+	if(tag_file.is_open()){
+		while(getline(tag_file, line)){
+			std::istringstream is(line);
+			int id, x, y, z, yaw, roll, pitch;
+			is >> id >> x >> y >> z >> yaw >> roll >> pitch;
+			std::cout << "id: " << id << "x: " << x;
+		}
+	}
 }
 
 void VideoTag::loop(){

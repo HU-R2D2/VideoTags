@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include <cstring>
+#include <string>
+#include <sstream>
 #include <vector>
 #include <list>
 #include <sys/time.h>
@@ -61,12 +63,15 @@ public:
 	SensorResult get_data() override;
 					  
 private:
+
 	
 	typedef struct tag_info{
 		int id;
 		r2d2::CoordinateAttitude position;
 	}tag;
 
+	void read_tag_info();
+	
 	void loop();
 
 	//! Function to return the current system time
