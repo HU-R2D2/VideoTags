@@ -9,9 +9,11 @@
 #include <sys/time.h>
 #include <cmath>
 
+#include "CoordinateAttitude.hpp"
 #include "Sensor.hpp"
 #include "Coordinate.hpp"
 #include "Length.hpp"
+
 
 #ifndef __APPLE__
 #define EXPOSURE_CONTROL // only works in Linux
@@ -59,6 +61,12 @@ public:
 	SensorResult get_data() override;
 					  
 private:
+	
+	typedef struct tag_info{
+		int id;
+		r2d2::CoordinateAttitude position;
+	}tag;
+
 	void loop();
 
 	//! Function to return the current system time
@@ -127,10 +135,10 @@ private:
   	int m_exposure = -1 ;
   	int m_gain = -1 ;
   	int m_brightness = -1;
-
-	SensorResult result = SensorResult(0.0, r2d2::Coordinate(0 * r2d2::Length::METER,
-						  0 * r2d2::Length::METER,
-						  0 * r2d2::Length::METER));
+	r2d2::Coordinate cor = r2d2::Coordinate( 0 * r2d2::Length::METER,
+						  		 			 0 * r2d2::Length::METER,
+						  		 			 0 * r2d2::Length::METER);
+	SensorResult result = SensorResult(0.0, cor);
 		
 };
 #endif
