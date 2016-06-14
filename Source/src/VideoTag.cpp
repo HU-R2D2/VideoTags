@@ -9,16 +9,20 @@ VideoTag::VideoTag(double factor):
 	//get_data();
 }
 
-void read_tag_info(){
+void VideoTag::read_tag_info(){
 	std::string line;
-	std::ifstream tag_file("Tag_Info.txt");
+	std::ifstream tag_file("Tag_Info.txt", std::ifstream::in);
 	if(tag_file.is_open()){
+		cout<<"Loaded file";
 		while(getline(tag_file, line)){
 			std::istringstream is(line);
 			int id, x, y, z, yaw, roll, pitch;
 			is >> id >> x >> y >> z >> yaw >> roll >> pitch;
 			std::cout << "id: " << id << "x: " << x;
 		}
+	}
+	else{
+	cout<<"Could not load file";
 	}
 }
 
@@ -31,6 +35,7 @@ void VideoTag::loop(){
 		vector<AprilTags::TagDetection> detections = processImage(image, image_gray);
 
 		int detect_count = detections.size();
+		print_detection(detections[i]);
 		if(detect_count > 0){
 		    // get distance of tags;
 			// and calculate average of de coordinates
@@ -40,7 +45,7 @@ void VideoTag::loop(){
 				x += temp.get_x();
 				y += temp.get_y();
 				z += temp.get_z();
-                print_detection(detections[i]);
+                		print_detection(detections[i]);
 			}
 			x /= detect_count;
 			y /= detect_count;

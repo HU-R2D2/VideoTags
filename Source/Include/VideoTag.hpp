@@ -1,7 +1,7 @@
 #ifndef _VIDEOTAG_HPP
 #define _VIDEOTAG_HPP
 
-
+#include <fstream>
 #include <iostream>
 #include <cstring>
 #include <string>
