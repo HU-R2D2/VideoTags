@@ -50,24 +50,59 @@ const double TWOPI = 2.0*PI;
 
 class VideoTag : public r2d2::Sensor<r2d2::Coordinate>{
 public:
+	//! Constructor
+	//! Param factor, the error of the sensor
 	VideoTag(double factor);
 	
+	//! Returned the coordinates of the camera
+	//! return SensorResult, with the coordinates of the camera
 	SensorResult get_data() override;
 	
-	double tic();
-	double standardRad(double t);
-	void wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, 
-					  double& pitch, double& roll) ;
-	void setTagCodes(string s);
-	void setupVideo();
-	void print_detection(AprilTags::TagDetection& detection);
-	//void processImage(cv::Mat& image, cv::Mat& image_gray);
-	
-	
-	vector<AprilTags::TagDetection> processImage(cv::Mat& image, cv::Mat& image_gray);
-	r2d2::Coordinate calculatePosition(AprilTags::TagDetection& detection);
 					  
 private:
+	//! Function to return the current system time
+	//! return current system time in seconds
+	double tic();
+	
+	//! Normalize angle to be within the interval [-pi,pi]
+	//! Param double t the degrees
+	//! return angle in radial between -pi and pi
+	double standardRad(double t);
+
+	//! Convert rotation matrix to Euler angles
+	//! Param double yaw the rotation of the z-as
+	//! Param double pitch the rotation of the y-as
+	//! Param double roll the roation of the x-as
+	//! return void
+	void wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, 
+					  double& pitch, double& roll) ;
+
+	//! Sets the TagCode type for detection
+	//! param s string that contains the type of TagCode
+	//! return void
+	void setTagCodes(string s);
+
+	//! Opends video input
+	//! Sets the excposure, gain and brightness
+	//! return void
+	void setupVideo();
+
+	//! Prints the detection
+	//! Param detection, the TagDetections
+	//! return void
+	void print_detection(AprilTags::TagDetection& detection);
+
+	//! Processed the image	and checked if there is a tag
+	//! Param image, the image in color
+	//! Param image_gray, the image in gray
+	//! return vector with the tagdetections
+	vector<AprilTags::TagDetection> processImage(cv::Mat& image, cv::Mat& image_gray);
+
+	//! Calculates the position of the camera with the detected tags
+	//! Param detection, the detected tags
+	//! return r2d2::Coordinate with the position of the camera
+	r2d2::Coordinate calculatePosition(AprilTags::TagDetection& detection);
+
  	AprilTags::TagCodes m_tagCodes = AprilTags::tagCodes36h11;
 	AprilTags::TagDetector * m_tagDetector = new AprilTags::TagDetector(m_tagCodes);
 
