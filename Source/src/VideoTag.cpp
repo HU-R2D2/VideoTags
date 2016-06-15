@@ -15,7 +15,7 @@ void VideoTag::read_tag_info(){
 	std::string line;
 	std::ifstream tag_file("Tag_Info.txt", std::ifstream::in);
 	if(tag_file.is_open()){
-		cout<<"Loaded Tag_Infor.txt";
+		cout<<"Loaded Tag_Info.txt";
 		while(getline(tag_file, line)){
 			std::istringstream is(line);
 			int id;
@@ -219,6 +219,14 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 	int id = detection.id;
 
 	r2d2::Coordinate tag_coordinate;
+
+	tag_info detected_tag;
+	for (int i = 0; i < tags.size(); i++){
+		if(tags[i].id == id){
+			detected_tag = tags[i]
+		}
+	}
+
 	// todo --> get coordinate of de tag with his ID
 	r2d2::Length tag_x = 0 * r2d2::Length::METER;
 	r2d2::Length tag_y = 0 * r2d2::Length::METER;
