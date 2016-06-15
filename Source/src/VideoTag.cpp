@@ -31,10 +31,9 @@ void VideoTag::read_tag_info(){
 			tag.id = id;
 			tag.position = r2d2::CoordinateAttitude(cor, at);
 			tags.push_back(tag);
-			std::cout << "id: " << id << "x: " << x << std::endl;
 		}
 	}
-	else{
+	else {
 		cout << "Could not load file!" << endl;
 	}
 	cout << "amount of tags: " << tags.size() << endl;
@@ -212,20 +211,45 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 
   r2d2::Coordinate VideoTag::calculatePosition(AprilTags::TagDetection& detection) {
 	Eigen::Vector3d translation;
-    Eigen::Matrix3d rotation;
-    detection.getRelativeTranslationRotation(m_tagSize, m_fx, m_fy, m_px, m_py,
-                                             translation, rotation);
+    	Eigen::Matrix3d rotation;
+    	detection.getRelativeTranslationRotation(m_tagSize, m_fx, m_fy, m_px, m_py,
+                                                 translation, rotation);
 
+	Eigen::Matrix3d F;
+    	F <<
+      	    1,  0,   0,
+      	    0,  -1,  0,
+      	    0,  0,   1;
+    	Eigen::Matrix3d fixed_rot = F*rotation;
+    	double yaw, pitch, roll;
+    	wRo_to_euler(fixed_rot, yaw, pitch, roll);	
+		
+	// get tag information
 	int id = detection.id;
-
 	r2d2::Coordinate tag_coordinate;
-
 	tag_info detected_tag;
 	for (int i = 0; i < tags.size(); i++){
 		if(tags[i].id == id){
 			detected_tag = tags[i]
 		}
 	}
+	// caluculate x an y from camera to tag 
+	double x = acos(pitch) * translation.norm();
+	double y = asin(pitch) * translation.norm();
+	cout << endl << "x = " << x << " y = " << y << endl;
+	
+	r2d2::Coordinate tag_cor = detected_tag.position.get_coordinate();
+	r2d2::Attitude tag_at = detected_tag.position.get_attitude();
+
+	r2d2::Angle tag_pitch = tag_at.get_pitch();
+	// calculate x and y to reference point from tag
+	
+	r2d2::Angle ref_angle = 
+
+	// calculate x an y according to map reference (absolute to map)
+
+
+
 
 	// todo --> get coordinate of de tag with his ID
 	r2d2::Length tag_x = 0 * r2d2::Length::METER;
