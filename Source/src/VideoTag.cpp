@@ -15,7 +15,7 @@ void VideoTag::read_tag_info(){
 	std::string line;
 	std::ifstream tag_file("Tag_Info.txt", std::ifstream::in);
 	if(tag_file.is_open()){
-		cout<<"Loaded Tag_Infor.txt";
+		cout<<"Loaded Tag_Info.txt";
 		while(getline(tag_file, line)){
 			std::istringstream is(line);
 			int id;
@@ -31,10 +31,9 @@ void VideoTag::read_tag_info(){
 			tag.id = id;
 			tag.position = r2d2::CoordinateAttitude(cor, at);
 			tags.push_back(tag);
-			std::cout << "id: " << id << "x: " << x << std::endl;
 		}
 	}
-	else{
+	else {
 		cout << "Could not load file!" << endl;
 	}
 	cout << "amount of tags: " << tags.size() << endl;
@@ -48,6 +47,7 @@ void VideoTag::loop(){
 	cv::Mat image_gray;
 	while(true){
     	// capture frame
+        cout<<"Scanning...";
       	m_cap >> image;
 		vector<AprilTags::TagDetection> detections = processImage(image, image_gray);
 
@@ -212,23 +212,71 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 
   r2d2::Coordinate VideoTag::calculatePosition(AprilTags::TagDetection& detection) {
 	Eigen::Vector3d translation;
-    Eigen::Matrix3d rotation;
-    detection.getRelativeTranslationRotation(m_tagSize, m_fx, m_fy, m_px, m_py,
-                                             translation, rotation);
+    	Eigen::Matrix3d rotation;
+    	detection.getRelativeTranslationRotation(m_tagSize, m_fx, m_fy, m_px, m_py,
+                                                 translation, rotation);
 
+	Eigen::Matrix3d F;
+    	F <<
+      	    1,  0,   0,
+      	    0,  -1,  0,
+      	    0,  0,   1;
+    	Eigen::Matrix3d fixed_rot = F*rotation;
+    	double yaw, pitch, roll;
+    	wRo_to_euler(fixed_rot, yaw, pitch, roll);	
+		
+	// get tag information
 	int id = detection.id;
-
 	r2d2::Coordinate tag_coordinate;
-	// todo --> get coordinate of de tag with his ID
-	r2d2::Length tag_x = 0 * r2d2::Length::METER;
-	r2d2::Length tag_y = 0 * r2d2::Length::METER;
-	r2d2::Length tag_z = 0 * r2d2::Length::METER;
+	tag_info detected_tag;
+	for (int i = 0; i < tags.size(); i++){
+		if(tags[i].id == id){
+			detected_tag = tags[i];
+		}
+	}
 
-	// distance from camera to tag
-	r2d2::Length camera_x = translation(0) * r2d2::Length::METER;
-	r2d2::Length camera_y = translation(1) * r2d2::Length::METER;
-	r2d2::Length camera_z = translation(2) * r2d2::Length::METER;
-	return r2d2::Coordinate(tag_x + camera_x, tag_y + camera_y, tag_z + camera_y);
+	double distance = translation.norm();
+      
+	r2d2::Coordinate tag_cor = detected_tag.position.get_coordinate();
+	r2d2::Attitude tag_at = detected_tag.position.get_attitude();
+
+	r2d2::Angle tag_pitch = tag_at.get_pitch();
+	
+	// calculate x and y to reference point from tag
+	r2d2::Angle ref_angle = tag_pitch + (pitch * r2d2::Angle::rad);
+
+	if (ref_angle > ((2 * PI)* r2d2::Angle::rad)){ ref_angle -= (2 * PI)* r2d2::Angle::rad;}
+	
+
+	// calculate x an y according to map reference (absolute to map)
+	int kwadrant = ref_angle.get_angle() / ((0.5 * PI));
+	
+	r2d2::Angle tmp_angle = (ref_angle.get_angle() - (kwadrant* 0.5 * PI)) * r2d2::Angle::rad;
+	double tmp_y = sin(tmp_angle.get_angle()) * distance;
+	double tmp_x = cos(tmp_angle.get_angle()) * distance;
+
+    // todo --> get coordinate of de tag with his ID
+	r2d2::Length position_x = 0 * r2d2::Length::METER;
+	r2d2::Length position_y = 0 * r2d2::Length::METER;
+	r2d2::Length position_z = 1 * r2d2::Length::METER;
+
+	if (kwadrant == 0){ 
+		position_x = tag_cor.get_x() + (tmp_x * r2d2::Length::METER);
+		position_y = tag_cor.get_y() - (tmp_y * r2d2::Length::METER);}
+	else if(kwadrant == 1){
+        position_x = tag_cor.get_x() + (tmp_x * r2d2::Length::METER);
+		position_y = tag_cor.get_y() + (tmp_y * r2d2::Length::METER);}
+	else if(kwadrant == 2){
+        position_x = tag_cor.get_x() - (tmp_x * r2d2::Length::METER);
+		position_y = tag_cor.get_y() + (tmp_y * r2d2::Length::METER);}
+	else if(kwadrant == 3){
+        position_x = tag_cor.get_x() - (tmp_x * r2d2::Length::METER);
+		position_y = tag_cor.get_y() - (tmp_y * r2d2::Length::METER);}
+	cout<<"ref_angle: "<< ref_angle.get_angle()<<endl;
+	cout<< "Kwadrant: "<< kwadrant<< "tmp_angle: "<< tmp_angle.get_angle()<<endl;
+	cout<< " tmp_x : "<< tmp_x << " tmp_y: " << tmp_y<<endl;
+	cout<<"position_x: " << position_x<< " position_y : " << position_y<< endl;
+	return r2d2::Coordinate(position_x, position_y, position_z);
 }
 
   vector<AprilTags::TagDetection> VideoTag::processImage(cv::Mat& image, cv::Mat& image_gray) {
