@@ -64,7 +64,7 @@ public:
 					  
 private:
 
-	
+	vector<tag_info> tags;
 	typedef struct tag_info{
 		int id;
 		r2d2::CoordinateAttitude position;

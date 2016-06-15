@@ -13,16 +13,31 @@ void VideoTag::read_tag_info(){
 	std::string line;
 	std::ifstream tag_file("Tag_Info.txt", std::ifstream::in);
 	if(tag_file.is_open()){
-		cout<<"Loaded file";
+		cout<<"Loaded Tag_Infor.txt";
 		while(getline(tag_file, line)){
 			std::istringstream is(line);
-			int id, x, y, z, yaw, roll, pitch;
+			int id;
+			double x, y, z, yaw, roll, pitch;
 			is >> id >> x >> y >> z >> yaw >> roll >> pitch;
-			std::cout << "id: " << id << "x: " << x;
+			r2d2::Coordinate cor(x * r2d2::Length::METER, 
+					     y * r2d2::Length::METER, 
+					     z * r2d2::Length::METER);
+			r2d2::Attitude at(pitch * r2d2::Angle::rad,
+					  yaw * r2d2::Angle::rad,
+					  roll * r2d2::Angle::rad);
+			tag_info tag;
+			tag.id = id;
+			tag.position = r2d2::CoordinateAttitude(cor, at);
+			tags.push_back(tag);
+			std::cout << "id: " << id << "x: " << x << std::endl;
 		}
 	}
 	else{
-	cout<<"Could not load file";
+		cout << "Could not load file!" << endl;
+	}
+	cout << "amount of tags: " << tags.size() << endl;
+	for(int i = 0; i<tags.size(); i++){
+		cout << tags[i].id << " " << tags[i].position << " " << endl;
 	}
 }
 
