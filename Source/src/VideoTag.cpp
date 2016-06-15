@@ -236,12 +236,7 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 	}
 
 	double distance = translation.norm();
-
-	// caluculate x an y from camera to tag 
-	double x = acos(pitch) * distance;
-	double y = asin(pitch) * distance;
-	cout << endl << "x = " << x << " y = " << y << endl;
-	
+      
 	r2d2::Coordinate tag_cor = detected_tag.position.get_coordinate();
 	r2d2::Attitude tag_at = detected_tag.position.get_attitude();
 
@@ -254,12 +249,11 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 	
 
 	// calculate x an y according to map reference (absolute to map)
-	int kwadrant = ref_angle / ((0.5 * PI)* r2d2::Angle::rad);
+	int kwadrant = ref_angle.get_angle() / ((0.5 * PI));
 	
-	//r2d2::Angle tmp_angle = (ref_angle % (0.5 * PI)) * r2d2::Angle::rad;
-    r2d2::Angle tmp_angle;
-	double tmp_y = acos(tmp_angle.get_angle()) * distance;
-	double tmp_x = asin(tmp_angle.get_angle()) * distance;
+	r2d2::Angle tmp_angle = (ref_angle.get_angle() - (kwadrant* 0.5 * PI)) * r2d2::Angle::rad;
+	double tmp_y = sin(tmp_angle.get_angle()) * distance;
+	double tmp_x = cos(tmp_angle.get_angle()) * distance;
 
     // todo --> get coordinate of de tag with his ID
 	r2d2::Length position_x = 0 * r2d2::Length::METER;
@@ -278,7 +272,10 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 	else if(kwadrant == 3){
         position_x = tag_cor.get_x() - (tmp_x * r2d2::Length::METER);
 		position_y = tag_cor.get_y() - (tmp_y * r2d2::Length::METER);}
-	
+	cout<<"ref_angle: "<< ref_angle.get_angle()<<endl;
+	cout<< "Kwadrant: "<< kwadrant<< "tmp_angle: "<< tmp_angle.get_angle()<<endl;
+	cout<< " tmp_x : "<< tmp_x << " tmp_y: " << tmp_y<<endl;
+	cout<<"position_x: " << position_x<< " position_y : " << position_y<< endl;
 	return r2d2::Coordinate(position_x, position_y, position_z);
 }
 
