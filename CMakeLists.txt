@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.9)
 project(VideoTags)
 find_package (Threads)
-set(LDFLAGS "${LDFLAGS} -lv4l1 -lv4l2")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -lv4l1 -lv4l2")
+set(LDFLAGS "${LDFLAGS} -lv4l1 -lv4l2 -lpthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -lv4l1 -lv4l2 -lpthread")
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(AprilTags . /opt/local/include)
@@ -31,5 +31,5 @@ include_directories(
 	source/Include)
 
 add_executable(VideoTags "Source/src/VideoTag.cpp" "Source/Include/VideoTag.hpp" ${SOURCES})
-target_link_libraries(VideoTags ${OpenCV_LIBS} -lv4l1 -lv4l2)
+target_link_libraries(VideoTags ${OpenCV_LIBS} -lv4l1 -lv4l2 -lpthread)
 
