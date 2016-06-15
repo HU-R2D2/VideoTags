@@ -4,16 +4,16 @@ VideoTag::VideoTag(double factor):
 	Sensor{ factor }
 {
 	setupVideo();
-	read_tag_info();
+	read_tag_info("Tag_Info.txt");
 	
 	std::thread t(&VideoTag::loop, this);
 	t.join();
 	
 }
 
-void VideoTag::read_tag_info(){
+void VideoTag::read_tag_info(std::string tag_file){
 	std::string line;
-	std::ifstream tag_file("Tag_Info.txt", std::ifstream::in);
+	std::ifstream tag_file(tag_file, std::ifstream::in);
 	if(tag_file.is_open()){
 		cout<<"Loaded Tag_Info.txt";
 		while(getline(tag_file, line)){
@@ -235,31 +235,37 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 		}
 	}
 
+	// distance between the tag and the camera
 	double distance = translation.norm();
       
+	// tag_cor, the coordinate of the tag
 	r2d2::Coordinate tag_cor = detected_tag.position.get_coordinate();
+	// tag_at, the attitude of the tag
 	r2d2::Attitude tag_at = detected_tag.position.get_attitude();
 
+	// tag_pitch, the pitch of tag and the camera
 	r2d2::Angle tag_pitch = tag_at.get_pitch();
 	
-	// calculate x and y to reference point from tag
+	// refference angle, the absolute pitch of the tag + the pitch between camera and tag 
+	// with gifs the absolute rotation of the camera
 	r2d2::Angle ref_angle = tag_pitch + (pitch * r2d2::Angle::rad);
 
+	// if ref_angle is bigger than 2 PI, than substract 2 PI
 	if (ref_angle > ((2 * PI)* r2d2::Angle::rad)){ ref_angle -= (2 * PI)* r2d2::Angle::rad;}
 	
-
-	// calculate x an y according to map reference (absolute to map)
+	// calculate in witch kwadrant the camera is
 	int kwadrant = ref_angle.get_angle() / ((0.5 * PI));
 	
+	// calculate the x and y offset between the camera and the tag
 	r2d2::Angle tmp_angle = (ref_angle.get_angle() - (kwadrant* 0.5 * PI)) * r2d2::Angle::rad;
 	double tmp_y = sin(tmp_angle.get_angle()) * distance;
 	double tmp_x = cos(tmp_angle.get_angle()) * distance;
 
-    // todo --> get coordinate of de tag with his ID
 	r2d2::Length position_x = 0 * r2d2::Length::METER;
 	r2d2::Length position_y = 0 * r2d2::Length::METER;
 	r2d2::Length position_z = 1 * r2d2::Length::METER;
 
+	// calculate the x and y position of the camera
 	if (kwadrant == 0){ 
 		position_x = tag_cor.get_x() + (tmp_x * r2d2::Length::METER);
 		position_y = tag_cor.get_y() - (tmp_y * r2d2::Length::METER);}

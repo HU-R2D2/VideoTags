@@ -64,20 +64,27 @@ public:
 	//! return SensorResult, with the coordinates of the camera
 	SensorResult get_data() override;
 
+	//! Loop function for checking video input for tags 
+	//! And saves the current position in result
+	//! return void
 	void loop();
 					  
 private:
-
+	//! Struct for tag info
+	//! id, the id of the tag
+	//! position, the coordinates and the attitude of the tag
 	typedef struct tag_info{
 		int id;
 		r2d2::CoordinateAttitude position;
 	}tag;
 
+	//! list of tags
 	vector<tag_info> tags;
 
-	void read_tag_info();
-	
-	
+	//! Reads the tags and it's information out of the file
+	//! Param tag_file, a string with the file name
+	//! return void
+	void read_tag_info(std::string tag_file);
 
 	//! Function to return the current system time
 	//! return current system time in seconds
