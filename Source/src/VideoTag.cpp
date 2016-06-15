@@ -5,8 +5,10 @@ VideoTag::VideoTag(double factor):
 {
 	setupVideo();
 	read_tag_info();
-	loop();
-	//get_data();
+	
+	std::thread t(&VideoTag::loop, this);
+	t.join();
+	
 }
 
 void VideoTag::read_tag_info(){
@@ -257,9 +259,12 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 
 // here is were everything begins
 int main(int argc, char* argv[]) {
+	
 	VideoTag tag (0.0);
     	// the actual processing loop where tags are detected and visualized
-    	tag.get_data();
-
+    	
+	
+	
+	tag.get_data();
   return 0;
 }
