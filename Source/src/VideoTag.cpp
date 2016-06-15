@@ -47,6 +47,7 @@ void VideoTag::loop(){
 	cv::Mat image_gray;
 	while(true){
     	// capture frame
+        cout<<"Scanning...";
       	m_cap >> image;
 		vector<AprilTags::TagDetection> detections = processImage(image, image_gray);
 
@@ -230,37 +231,55 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 	tag_info detected_tag;
 	for (int i = 0; i < tags.size(); i++){
 		if(tags[i].id == id){
-			detected_tag = tags[i]
+			detected_tag = tags[i];
 		}
 	}
+
+	double distance = translation.norm();
+
 	// caluculate x an y from camera to tag 
-	double x = acos(pitch) * translation.norm();
-	double y = asin(pitch) * translation.norm();
+	double x = acos(pitch) * distance;
+	double y = asin(pitch) * distance;
 	cout << endl << "x = " << x << " y = " << y << endl;
 	
 	r2d2::Coordinate tag_cor = detected_tag.position.get_coordinate();
 	r2d2::Attitude tag_at = detected_tag.position.get_attitude();
 
 	r2d2::Angle tag_pitch = tag_at.get_pitch();
-	// calculate x and y to reference point from tag
 	
-	r2d2::Angle ref_angle = 
+	// calculate x and y to reference point from tag
+	r2d2::Angle ref_angle = tag_pitch + (pitch * r2d2::Angle::rad);
+
+	if (ref_angle > ((2 * PI)* r2d2::Angle::rad)){ ref_angle -= (2 * PI)* r2d2::Angle::rad;}
+	
 
 	// calculate x an y according to map reference (absolute to map)
+	int kwadrant = ref_angle / ((0.5 * PI)* r2d2::Angle::rad);
+	
+	//r2d2::Angle tmp_angle = (ref_angle % (0.5 * PI)) * r2d2::Angle::rad;
+    r2d2::Angle tmp_angle;
+	double tmp_y = acos(tmp_angle.get_angle()) * distance;
+	double tmp_x = asin(tmp_angle.get_angle()) * distance;
 
+    // todo --> get coordinate of de tag with his ID
+	r2d2::Length position_x = 0 * r2d2::Length::METER;
+	r2d2::Length position_y = 0 * r2d2::Length::METER;
+	r2d2::Length position_z = 1 * r2d2::Length::METER;
 
-
-
-	// todo --> get coordinate of de tag with his ID
-	r2d2::Length tag_x = 0 * r2d2::Length::METER;
-	r2d2::Length tag_y = 0 * r2d2::Length::METER;
-	r2d2::Length tag_z = 0 * r2d2::Length::METER;
-
-	// distance from camera to tag
-	r2d2::Length camera_x = translation(0) * r2d2::Length::METER;
-	r2d2::Length camera_y = translation(1) * r2d2::Length::METER;
-	r2d2::Length camera_z = translation(2) * r2d2::Length::METER;
-	return r2d2::Coordinate(tag_x + camera_x, tag_y + camera_y, tag_z + camera_y);
+	if (kwadrant == 0){ 
+		position_x = tag_cor.get_x() + (tmp_x * r2d2::Length::METER);
+		position_y = tag_cor.get_y() - (tmp_y * r2d2::Length::METER);}
+	else if(kwadrant == 1){
+        position_x = tag_cor.get_x() + (tmp_x * r2d2::Length::METER);
+		position_y = tag_cor.get_y() + (tmp_y * r2d2::Length::METER);}
+	else if(kwadrant == 2){
+        position_x = tag_cor.get_x() - (tmp_x * r2d2::Length::METER);
+		position_y = tag_cor.get_y() + (tmp_y * r2d2::Length::METER);}
+	else if(kwadrant == 3){
+        position_x = tag_cor.get_x() - (tmp_x * r2d2::Length::METER);
+		position_y = tag_cor.get_y() - (tmp_y * r2d2::Length::METER);}
+	
+	return r2d2::Coordinate(position_x, position_y, position_z);
 }
 
   vector<AprilTags::TagDetection> VideoTag::processImage(cv::Mat& image, cv::Mat& image_gray) {
