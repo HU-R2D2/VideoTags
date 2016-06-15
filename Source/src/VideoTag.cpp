@@ -39,7 +39,7 @@ void VideoTag::read_tag_info(){
 	}
 	cout << "amount of tags: " << tags.size() << endl;
 	for(int i = 0; i<tags.size(); i++){
-		cout << tags[i].id << " " << tags[i].position << " " << endl;
+		cout << tags[i].id << std::endl;
 	}
 }
 
