@@ -11,6 +11,7 @@
 #include <sys/time.h>
 #include <cmath>
 #include <thread>
+#include <chrono>
 
 #include "CoordinateAttitude.hpp"
 #include "Sensor.hpp"
