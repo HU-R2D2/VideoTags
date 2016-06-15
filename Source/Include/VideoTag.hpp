@@ -10,6 +10,7 @@
 #include <list>
 #include <sys/time.h>
 #include <cmath>
+#include <thread>
 
 #include "CoordinateAttitude.hpp"
 #include "Sensor.hpp"
@@ -61,6 +62,8 @@ public:
 	//! Returned the coordinates of the camera
 	//! return SensorResult, with the coordinates of the camera
 	SensorResult get_data() override;
+
+	void loop();
 					  
 private:
 
@@ -72,7 +75,7 @@ private:
 
 	void read_tag_info();
 	
-	void loop();
+	
 
 	//! Function to return the current system time
 	//! return current system time in seconds
@@ -144,6 +147,7 @@ private:
 						  		 			 0 * r2d2::Length::METER,
 						  		 			 0 * r2d2::Length::METER);
 	SensorResult result = SensorResult(0.0, cor);
+	
 		
 };
 #endif
