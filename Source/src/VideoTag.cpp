@@ -69,6 +69,7 @@ void VideoTag::loop(){
 			r2d2::Coordinate average_coordinate(x, y, z);
 			result = SensorResult(0.0, average_coordinate);
 		}
+	std::this_thread::sleep_for (std::chrono::seconds(1));
 	}
 }
 
