@@ -6,32 +6,32 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -lv4l1 -lv4l2 -lpthread")
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(AprilTags . /opt/local/include)
-file(GLOB SOURCES 	"Source/src/*.cpp" 
-			"Source/Include/*.hpp"
-			"../deps/adt/source/include/ADT_Base.hpp" 
-			"../deps/sensorInterfaces/source/include/Sensor.hpp"
-			"../deps/sensorInterfaces/source/include/CoordinateAttitude.hpp"
-			"../deps/adt/source/include/Length.hpp"
-			"../deps/adt/source/src/Length.cpp"
-			"../deps/adt/source/include/Coordinate.hpp"
-			"../deps/adt/source/src/Coordinate.cpp"
-			"../deps/adt/source/include/*.hpp"
-			"../deps/adt/source/src/*.cpp"
+file(GLOB SOURCES 	"source/src/*.cpp" 
+			"source/include/*.hpp"
+			"../adt/source/include/ADT_Base.hpp" 
+			"../sensorInterfaces/source/include/Sensor.hpp"
+			"../sensorInterfaces/source/include/CoordinateAttitude.hpp"
+			"../adt/source/include/Length.hpp"
+			"../adt/source/src/Length.cpp"
+			"../adt/source/include/Coordinate.hpp"
+			"../adt/source/src/Coordinate.cpp"
+			"../adt/source/include/*.hpp"
+			"../adt/source/src/*.cpp"
 			"../deps/AprilTags/TagDetection.h"
 			"../deps/AprilTags/TagDetection.cc"
 			"../deps/AprilTags/*.h"
 			"../deps/AprilTags/*.cc"
-			"../deps/sharedobjects/source/include/*.hpp"
+			"../sharedobjects/source/include/*.hpp"
 			)
 
 include_directories(
- 	../deps/sensorInterfaces/source/include
-	../deps/sharedobjects/source/include/
-	../deps/adt/source/include
+ 	../sensorInterfaces/source/include
+	../sharedobjects/source/include/
+	../adt/source/include
 	../deps/AprilTags
 	../deps/*
-	source/Include)
+	source/include)
 
-add_executable(VideoTags "Source/src/VideoTag.cpp" "Source/Include/VideoTag.hpp" ${SOURCES})
+add_executable(VideoTags "source/src/VideoTag.cpp" "source/include/VideoTag.hpp" ${SOURCES})
 target_link_libraries(VideoTags ${OpenCV_LIBS} -lv4l1 -lv4l2 -lpthread)
 
