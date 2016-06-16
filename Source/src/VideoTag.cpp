@@ -1,4 +1,4 @@
-//! \addtogroup <Project_Number> <Project_name>
+//! \addtogroup 0013 Position_from_Video_using_Tags
 //! \brief Apriltag recognition 
 //!
 //! Module to recognise AprilTags 
