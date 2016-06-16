@@ -67,7 +67,8 @@ void VideoTag::loop(){
 			y /= detect_count;
 			z /= detect_count;
 			r2d2::Coordinate average_coordinate(x, y, z);
-			result = SensorResult(0.0, average_coordinate);
+			SharedObject<r2d2::Coordinate>::Accessor acc(shared_coordinate);
+			acc.access() = average_coordinate;
 		}
 	std::this_thread::sleep_for (std::chrono::seconds(1));
 	}
@@ -309,6 +310,8 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
   // The processing loop where images are retrieved, tags detected,
   // and information about detections generated
   VideoTag::SensorResult VideoTag::get_data() {
+	SharedObject<r2d2::Coordinate>::Accessor acc(shared_coordinate);
+	result = SensorResult(0.0, acc.access());
 	return result;
   }
 
