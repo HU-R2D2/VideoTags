@@ -6,12 +6,8 @@ VideoTag::VideoTag(double factor):
 {
 	setupVideo();
 	read_tag_info();
-	
-        //std::cout << acc.access() << std::endl;
-	//std::cout << typeid(shared_coordinate).name() << std::endl;
-
 	std::thread t(&VideoTag::loop, this);
-        t.join();
+    t.join();
 	
 }
 
@@ -42,8 +38,9 @@ void VideoTag::read_tag_info(){
 	}
 	cout << "amount of tags: " << tags.size() << endl;
 	for(int i = 0; i<tags.size(); i++){
-		cout << tags[i].id << std::endl;
+		std::cout << tags[i].id << ", ";
 	}
+	std::cout << std::endl;
 }
 
 void VideoTag::loop(){
@@ -283,10 +280,7 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 	else if(kwadrant == 3){
         position_x = tag_cor.get_x() - (tmp_x * r2d2::Length::METER);
 		position_y = tag_cor.get_y() - (tmp_y * r2d2::Length::METER);}
-	cout<<"ref_angle: "<< ref_angle.get_angle()<<endl;
-	cout<< "Kwadrant: "<< kwadrant<< "tmp_angle: "<< tmp_angle.get_angle()<<endl;
-	cout<< " tmp_x : "<< tmp_x << " tmp_y: " << tmp_y<<endl;
-	cout<<"position_x: " << position_x<< " position_y : " << position_y<< endl;
+	//cout<<"position_x: " << position_x<< " position_y : " << position_y<< endl;
 	return r2d2::Coordinate(position_x, position_y, position_z);
 }
 
@@ -320,15 +314,8 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
   }
 
 // here is were everything begins
-int main(int argc, char* argv[]) {
-	int a = 1;
-	LockingSharedObject<int> test(a);
-	SharedObject<int>::Accessor acc(test);
-	cout << acc.access() << "LALALALALALAL";
-	
+int main(int argc, char* argv[]) {	
 	VideoTag tag (0.0);
-    	
-	
 	while(true){
 	  tag.get_data(); 
 	}

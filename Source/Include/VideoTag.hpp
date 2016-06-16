@@ -157,9 +157,6 @@ private:
 						0 * r2d2::Length::METER);
 
   	LockingSharedObject<r2d2::Coordinate> shared_coordinate;
-	//SharedObject<r2d2::Coordinate>::Accessor acc1(shared_coordinate);
-
-
 	SensorResult result = SensorResult(0.0, cor);
 		
 };
