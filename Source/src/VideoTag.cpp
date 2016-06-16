@@ -4,19 +4,19 @@ VideoTag::VideoTag(double factor):
 	Sensor{ factor }
 {
 	setupVideo();
-	read_tag_info("Tag_Info.txt");
+	read_tag_info();
 	
 	std::thread t(&VideoTag::loop, this);
 	t.join();
 	
 }
 
-void VideoTag::read_tag_info(const char* tag_file){
+void VideoTag::read_tag_info(){
 	std::string line;
 	std::ifstream tag_file(tag_file, std::ifstream::in);
 	if(tag_file.is_open()){
 		cout<<"Loaded Tag_Info.txt";
-		while(getline(tag_file, line)){
+		while(getline("Tag_Info.txt", line)){
 			std::istringstream is(line);
 			int id;
 			double x, y, z, yaw, roll, pitch;
