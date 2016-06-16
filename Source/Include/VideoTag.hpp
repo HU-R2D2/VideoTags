@@ -17,7 +17,7 @@
 #include "Sensor.hpp"
 #include "Coordinate.hpp"
 #include "Length.hpp"
-#include "SharedObject.hpp"
+#include "LockingSharedObject.hpp"
 
 
 #ifndef __APPLE__
@@ -152,11 +152,13 @@ private:
   	int m_exposure = -1 ;
   	int m_gain = -1 ;
   	int m_brightness = -1;
-	r2d2::Coordinate cor = r2d2::Coordinate( 0 * r2d2::Length::METER,
-						  		 			 0 * r2d2::Length::METER,
-						  		 			 0 * r2d2::Length::METER);
-	
-	r2d2::LockingSharedObject<r2d2::Coordinate> shared_coordinate(cor);
+	r2d2::Coordinate cor = r2d2::Coordinate(0 * r2d2::Length::METER,
+						0 * r2d2::Length::METER,
+						0 * r2d2::Length::METER);
+
+  	LockingSharedObject<r2d2::Coordinate> shared_coordinate;
+	//SharedObject<r2d2::Coordinate>::Accessor acc1(shared_coordinate);
+
 
 	SensorResult result = SensorResult(0.0, cor);
 		

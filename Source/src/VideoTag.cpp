@@ -1,13 +1,17 @@
 #include "../Include/VideoTag.hpp"
 
 VideoTag::VideoTag(double factor):
-	Sensor{ factor }
+	Sensor{ factor },
+	shared_coordinate(cor)
 {
 	setupVideo();
 	read_tag_info();
 	
+        //std::cout << acc.access() << std::endl;
+	//std::cout << typeid(shared_coordinate).name() << std::endl;
+
 	std::thread t(&VideoTag::loop, this);
-	t.join();
+        t.join();
 	
 }
 
@@ -317,12 +321,16 @@ void VideoTag::wRo_to_euler( Eigen::Matrix3d& wRo, double& yaw, double& pitch, d
 
 // here is were everything begins
 int main(int argc, char* argv[]) {
+	int a = 1;
+	LockingSharedObject<int> test(a);
+	SharedObject<int>::Accessor acc(test);
+	cout << acc.access() << "LALALALALALAL";
 	
 	VideoTag tag (0.0);
-    	// the actual processing loop where tags are detected and visualized
     	
 	
-	
-	tag.get_data();
+	while(true){
+	  tag.get_data(); 
+	}
   return 0;
 }

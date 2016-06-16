@@ -21,10 +21,12 @@ file(GLOB SOURCES 	"Source/src/*.cpp"
 			"../deps/AprilTags/TagDetection.cc"
 			"../deps/AprilTags/*.h"
 			"../deps/AprilTags/*.cc"
+			"../deps/sharedobjects/source/include/*.hpp"
 			)
 
 include_directories(
  	../deps/sensorInterfaces/source/include
+	../deps/sharedobjects/source/include/
 	../deps/adt/source/include
 	../deps/AprilTags
 	../deps/*
