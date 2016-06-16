@@ -13,10 +13,10 @@ VideoTag::VideoTag(double factor):
 
 void VideoTag::read_tag_info(){
 	std::string line;
-	std::ifstream tag_file(tag_file, std::ifstream::in);
+	std::ifstream tag_file("Tag_Info.txt", std::ifstream::in);
 	if(tag_file.is_open()){
 		cout<<"Loaded Tag_Info.txt";
-		while(getline("Tag_Info.txt", line)){
+		while(getline(tag_file, line)){
 			std::istringstream is(line);
 			int id;
 			double x, y, z, yaw, roll, pitch;
