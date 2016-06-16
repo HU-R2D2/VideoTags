@@ -84,7 +84,7 @@ private:
 	//! Reads the tags and it's information out of the file
 	//! Param tag_file, a string with the file name
 	//! return void
-	void read_tag_info(char* tag_file);
+	void read_tag_info(const char* tag_file);
 
 	//! Function to return the current system time
 	//! return current system time in seconds

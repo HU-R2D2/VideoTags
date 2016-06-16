@@ -11,7 +11,7 @@ VideoTag::VideoTag(double factor):
 	
 }
 
-void VideoTag::read_tag_info(char* tag_file){
+void VideoTag::read_tag_info(const char* tag_file){
 	std::string line;
 	std::ifstream tag_file(tag_file, std::ifstream::in);
 	if(tag_file.is_open()){
