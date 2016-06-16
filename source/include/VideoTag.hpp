@@ -90,7 +90,7 @@
 #include "opencv2/opencv.hpp"
 
 // April tags detector and various families that can be selected by command line option
-#include "../deps/AprilTags/TagDetector.h"
+#include "TagDetector.h"
 #include "Tag16h5.h"
 #include "Tag25h7.h"
 #include "Tag25h9.h"

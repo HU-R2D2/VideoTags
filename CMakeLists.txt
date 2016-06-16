@@ -17,8 +17,6 @@ file(GLOB SOURCES 	"source/src/*.cpp"
 			"../adt/source/src/Coordinate.cpp"
 			"../adt/source/include/*.hpp"
 			"../adt/source/src/*.cpp"
-			"../deps/AprilTags/TagDetection.h"
-			"../deps/AprilTags/TagDetection.cc"
 			"../deps/AprilTags/*.h"
 			"../deps/AprilTags/*.cc"
 			"../sharedobjects/source/include/*.hpp"
@@ -29,7 +27,6 @@ include_directories(
 	../sharedobjects/source/include/
 	../adt/source/include
 	../deps/AprilTags
-	../deps/*
 	source/include)
 
 add_executable(VideoTags "source/src/VideoTag.cpp" "source/include/VideoTag.hpp" ${SOURCES})
